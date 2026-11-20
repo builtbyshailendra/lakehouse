@@ -185,11 +185,14 @@ def days(n: int = DAYS, start: dt.date = START) -> list[dt.date]:
     return [start + dt.timedelta(days=i) for i in range(n)]
 
 
-def restate(batch: pa.Table, factor: float) -> pa.Table:
+def restate(batch: pa.Table, factor: float, list_too: bool = False) -> pa.Table:
     """The same export with every billed cost scaled, e.g. 0.9 for a 10%
-    credit applied after the fact. Rounded back to 6 decimals."""
+    credit applied after the fact (list_too: the list price as well, like a
+    pricing bug on the provider's side). Rounded back to 6 decimals."""
     con = duckdb.connect()
     con.register("b", batch)
-    return con.sql(
-        f"SELECT * REPLACE (CAST(round(billed_cost * {float(factor)!r}, 6) AS DECIMAL(14, 6)) AS billed_cost) FROM b"
-    ).to_arrow_table()
+    f = repr(float(factor))
+    cols = [f"CAST(round(billed_cost * {f}, 6) AS DECIMAL(14, 6)) AS billed_cost"]
+    if list_too:
+        cols.append(f"CAST(round(list_cost * {f}, 6) AS DECIMAL(14, 6)) AS list_cost")
+    return con.sql(f"SELECT * REPLACE ({', '.join(cols)}) FROM b").to_arrow_table()
