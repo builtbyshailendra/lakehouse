@@ -28,9 +28,27 @@ def day_filter(day: dt.date) -> BooleanExpression:
     return And(GreaterThanOrEqual("usage_start", f"{day}T00:00:00"), LessThan("usage_start", f"{nxt}T00:00:00"))
 
 
+# The export format stays the same while the table evolves: table column ->
+# the export column it comes from, after a rename (step 3).
+ALIASES = {"effective_cost": "billed_cost"}
+
+
 def conform(batch: pa.Table, table: Table) -> pa.Table:
-    """Cast to the table's Arrow schema (names, types, required fields)."""
-    return batch.select(table.schema().column_names).cast(table.schema().as_arrow())
+    """Shape an export to the table's current schema: same names, types and
+    required fields. Columns the export doesn't have become nulls if the
+    table allows it."""
+    schema = table.schema()
+    cols = []
+    for f in schema.fields:
+        if f.name in batch.column_names:
+            cols.append(batch[f.name])
+        elif ALIASES.get(f.name) in batch.column_names:
+            cols.append(batch[ALIASES[f.name]])
+        elif f.optional:
+            cols.append(pa.nulls(batch.num_rows))
+        else:
+            raise ValueError(f"the export has nothing for required column {f.name!r}")
+    return pa.Table.from_arrays(cols, names=[f.name for f in schema.fields]).cast(schema.as_arrow())
 
 
 @dataclass

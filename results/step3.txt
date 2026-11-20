@@ -1,0 +1,24 @@
+tags: ['close-2026-08', 'close-2026-09']
+
+rename billed_cost -> effective_cost + add commitment_discount_id: 55 ms, 92 data files untouched, total unchanged ($12,449,269.36)
+for scale, rewriting all 7,139,200 rows with DuckDB instead: 7581 ms
+
+September at close (tag close-2026-09): $4,080,894.02; after 3% credits on 1-10 Sep: $4,040,629.36; the tag still reads $4,080,894.02
+
+bad load of 31 Oct (x100): day total $12,968,296.95; rollback took 115 ms; day total back to $129,682.97
+
+partitioned by day + team from now on; re-laid out October (31 days) in 34.0 s
+  Aug-Sep (day): 61 files, avg 1.82 MB
+  Oct (day + team): 248 files, avg 0.23 MB
+queries, DuckDB (files and bytes from EXPLAIN ANALYZE; median of 9 runs):
+  one team, September: 30 files, 13.1 MB read, 205 ms
+  one team, October: 31 files, 2.0 MB read, 458 ms
+  all teams, September: 30 files, 13.1 MB read, 190 ms
+  all teams, October: 248 files, 16.9 MB read, 741 ms
+
+snapshots: 176, metadata.json 136,813 bytes
+one team, one month: median ms of 9 runs
+            DuckDB iceberg_scan   same files via read_parquet   PyIceberg plan+read
+September                   113                            27                   368
+October                     196                            22                   325
+reading every manifest entry (iceberg_metadata): 439 ms for 92 manifests
