@@ -1,0 +1,36 @@
+showback: cost per team per month (919 ms; synthetic dollars; November is 1-7 only)
+  team                     Aug 2026        Sep 2026        Oct 2026        Nov 2026   Oct vs Sep
+  data-platform           523,610         552,786         619,641         146,474   +12.1%
+  observability           516,581         544,253         610,267         144,341   +12.1%
+  checkout                507,113         534,684         599,340         141,796   +12.1%
+  payments                481,105         507,125         569,380         134,639   +12.3%
+  identity                479,572         505,461         567,333         134,155   +12.2%
+  growth                  452,919         477,375         535,405         126,667   +12.2%
+  search                  438,581         461,841         518,731         122,510   +12.3%
+  ml-platform             433,814         457,104         512,390         121,253   +12.1%
+
+spike detection (1616 ms over 7682400 rows): 27 spike events; 27 of 27 incidents found, 0 spikes with no incident
+  estimated incident cost vs the truth: median error 0.9%, worst 3.7%
+  costliest incidents (estimate / truth):
+    INC-0025 SEV2 search        network   ap-south-1 21 Oct 18:00  3h at 3.72x  $705.97 / $698.42
+    INC-0014 SEV2 data-platform network   us-east-1  16 Sep 12:00  2h at 3.77x  $546.92 / $532.60
+    INC-0027 SEV2 data-platform database  ap-south-1 28 Oct 13:00  3h at 3.65x  $468.56 / $465.50
+    INC-0016 SEV3 data-platform network   ap-south-1 21 Sep 15:00  3h at 2.62x  $405.97 / $398.82
+    INC-0026 SEV2 payments      network   us-east-1  23 Oct 17:00  2h at 3.58x  $405.80 / $405.42
+A. 31 daily loads, each replacing its day
+  Iceberg (PyIceberg): median 344 ms, p95 813 ms
+  DuckLake (DuckDB):   median 280 ms, p95 909 ms
+  restating one loaded day: Iceberg 595 ms, DuckLake 732 ms
+B. queries (DuckDB both times; median of 9)
+  month by service: Iceberg 55 ms, DuckLake 26 ms (same answer)
+  one day by team: Iceberg 11 ms, DuckLake 13 ms (same answer)
+C. metadata after 32 commits
+  Iceberg: 99 files, 0.8 MB (metadata.json 29 KB)
+  DuckLake: catalog database 8.6 MB (an empty PostgreSQL database is about 7.5 MB)
+D. a week of hourly appends (168 commits of ~3,200 rows)
+  Iceberg: median 184 ms, p95 567 ms; 168 data files
+  DuckLake, no inlining: median 25 ms, p95 40 ms; 168 data files; week by service 32 ms
+  DuckLake, inlining up to 10,000 rows: median 109 ms, p95 358 ms; 0 data files; week by service 692 ms
+    flushing the inlined rows to Parquet: 4046 ms, 7 files
+
+(DuckDB extensions from D:/cache/duckdb-ext; both catalogs on the same PostgreSQL 16)

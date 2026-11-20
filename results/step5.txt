@@ -1,0 +1,21 @@
+before: 31 dead manifests; one team for October, DuckDB 260 ms
+checks: 1 row count = manifest, 2 total = manifest, 3 line ids unique, 4 no negative usage, 5 billed <= list, 6 rows inside the day, 7 teams known, 8 total vs last 7 days
+
+day         what                             result                  failed checks  write  audit  publish (ms)
+2026-11-01  export                           published               -                706    291     76
+2026-11-02  truncated transfer               QUARANTINED             1, 2             341    168      0
+              check 1 failed: row count matches the export manifest (70,000 rows, manifest says 77,600)
+              check 2 failed: billed total matches the export manifest (148896.091002 vs 161237.980666)
+2026-11-02  re-sent                          published               -                334    230     60
+2026-11-03  prices x100 (provider bug)       QUARANTINED             8                313    188      0
+              check 8 failed: total within 0.5x-2x of the last 7 days' median (101.24x the median (159,703.29))
+2026-11-03  corrected                        published               -                452    320    109
+2026-11-04  export, main changes mid-audit   published, restaged 1x  -                780    225     68
+2026-11-05  export                           published               -                886    374    817
+2026-11-06  export                           published               -               1757    211    150
+2026-11-07  export                           published               -                431    173    323
+
+main now: 7,682,400 rows (99 days), total $13,478,247.62; DuckDB never saw a quarantined batch (main's totals were unchanged across each failed audit)
+quarantined branches kept for inspection: audit-cost-2026-11-02-1, audit-cost-2026-11-03-3
+after review, branches removed; refs now: close-2026-08, close-2026-09, main
+after the first publish: 0 dead manifests; one team for October, DuckDB 56 ms

@@ -1,25 +1,31 @@
 
-168 hourly appends, manifest merging off: 26.0 s (155 ms per commit)
-  before compaction: 168 data files, 168 manifests, metadata.json 122 KB; week by service: DuckDB 268 ms, PyIceberg plan 460 ms
-  compacted 7 days in 5.1 s
-  after compaction : 7 data files, 14 manifests, metadata.json 127 KB; week by service: DuckDB 140 ms, PyIceberg plan 73 ms
+168 hourly appends, manifest merging off: 38.1 s (227 ms per commit)
+  before compaction: 168 data files, 168 manifests, metadata.json 122 KB; week by service: DuckDB 188 ms, PyIceberg plan 309 ms
+  compacted 7 days in 5.0 s
+  after compaction : 7 data files, 14 manifests, metadata.json 127 KB; week by service: DuckDB 150 ms, PyIceberg plan 35 ms
   delete one resource (168 rows of 543,200): 2.0 s, rewrote 7 files, wrote 13.2 MB and 543,032 rows to remove 168
 
-168 hourly appends, manifest merging on: 29.0 s (173 ms per commit)
-  before compaction: 168 data files, 69 manifests, metadata.json 122 KB; week by service: DuckDB 200 ms, PyIceberg plan 145 ms
+168 hourly appends, manifest merging on: 36.3 s (216 ms per commit)
+  before compaction: 168 data files, 69 manifests, metadata.json 122 KB; week by service: DuckDB 287 ms, PyIceberg plan 187 ms
 
 dead manifests: August in 4 files a day, compacted, then one more day appended
-  124 small files      : 124 files, 124 manifests (0 holding only deleted entries); one team for August, DuckDB 232 ms
-  after compaction     : 31 files, 62 manifests (31 holding only deleted entries); one team for August, DuckDB 224 ms
-  after the next append: 32 files, 32 manifests (0 holding only deleted entries); one team for August, DuckDB 93 ms
+  124 small files      : 124 files, 124 manifests (0 holding only deleted entries); one team for August, DuckDB 335 ms
+  after compaction     : 31 files, 62 manifests (31 holding only deleted entries); one team for August, DuckDB 362 ms
+  after the next append: 32 files, 32 manifests (0 holding only deleted entries); one team for August, DuckDB 136 ms
+
+same data, more files: DuckDB through Iceberg metadata vs reading the files directly (median of 9)
+  files/day  manifest entries   no row matches   one day (iceberg_scan)   one day (read_parquet)   whole month
+          1                31              3 ms                    13 ms                      7 ms        140 ms
+          4               124              7 ms                    25 ms                     11 ms        281 ms
+         16               496              6 ms                    16 ms                      8 ms        663 ms
 
 main table: October back to one file per day, sorted by team
-  compacted 248 files into 31 in 26.5 s; 31 manifests now hold only deleted entries (cleared by the next load, step 5)
-  one team, September (time order): 30 files, row groups 30 / 30, 13.1 MB read, 141 ms
-  one team, October (sorted by team): 31 files, row groups 62 / 248, 4.1 MB read, 297 ms
+  compacted 248 files into 31 in 30.0 s; 31 manifests now hold only deleted entries (cleared by the next load, step 5)
+  one team, September (time order): 30 files, row groups 30 / 30, 13.1 MB read, 222 ms
+  one team, October (sorted by team): 31 files, row groups 62 / 248, 4.2 MB read, 573 ms
 
 main table: expire snapshots, then remove orphan files
-  before: 207 snapshots; on disk 382 data files (300 MB), 496 metadata files (9.8 MB)
-  expired 204 snapshots and removed 341 orphan files in 0.6 s
-  after: 3 snapshots kept (close-2026-08, close-2026-09, main); on disk 350 data files (242 MB), 187 metadata files (7.9 MB); metadata.json 13 KB
+  before: 207 snapshots; on disk 382 data files (300 MB), 496 metadata files (9.7 MB)
+  expired 204 snapshots and removed 589 orphan files in 1.0 s
+  after: 3 snapshots kept (close-2026-08, close-2026-09, main); on disk 102 data files (185 MB), 187 metadata files (7.9 MB); metadata.json 13 KB
   current total unchanged ($12,409,004.70); the September close tag still reads $4,080,894.02
