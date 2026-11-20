@@ -1,0 +1,10 @@
+writers  commits/s median (range of 3 runs)  PyIceberg retries  load_day retries  orphan files   (per run, median)
+      1   3.15 (3.13-3.25)                           0                 0             0
+      2   3.55 (2.92-3.94)                          13                 1             3
+      4   3.34 (2.87-3.42)                          37                 1             7
+      8   2.82 (2.72-2.94)                          54                 4            15
+
+kill loop: 30 runs (23 killed mid-run, 7 finished), 8 days checked after every run: always one complete version per day, never partial or mixed
+of the killed runs: 11 died after committing 1 or 2 of their 3 days, 11 before committing any, 1 after all 3
+orphans left by the kills: 17 files ({'.parquet': 5, '.avro': 12}); removed 17 after the final load
+final table: 620,800 rows, billed 899046.139246 = expected, DuckDB agrees; no orphans left
