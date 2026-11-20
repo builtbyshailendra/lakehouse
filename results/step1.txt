@@ -1,0 +1,27 @@
+loaded 92 days, 7,139,200 rows in 65.8 s (generating 12.6 s, writing+committing 53.1 s, 134,363 rows/s)
+per-day load: median 491 ms, p95 1251 ms, first 10 avg 611 ms, last 10 avg 434 ms
+
+metadata.json   00092-2cc214c7-f935-45dc-a26b-2d6c85a901c6.metadata.json  74,904 bytes, format v2, 92 snapshots
+snapshot        8565426927340754230
+manifest list   snap-8565426927340754230-0-9bd23bf0-909f-4343-8a33-73f02da557a7.avro  92 manifests
+  manifest      9bd23bf0-909f-4343-8a33-73f02da557a7-m0.avro  5,368 bytes, added 1, existing 0, deleted 0
+  manifest      b9f7e336-158f-41cd-83d7-51a7286e747c-m0.avro  5,366 bytes, added 1, existing 0, deleted 0
+  manifest      369f0cd5-1949-4484-bd72-da5f7d467ba7-m0.avro  5,369 bytes, added 1, existing 0, deleted 0
+  ... 89 more manifests
+data files      92 Parquet files, 7,139,200 rows, 167,097,089 bytes
+  usage_day=2026-10-31/00000-0-9bd23bf0-909f-4343-8a33-73f02da557a7.parquet  77,600 rows, 1,817,201 bytes
+  usage_day=2026-10-30/00000-0-b9f7e336-158f-41cd-83d7-51a7286e747c.parquet  77,600 rows, 1,818,601 bytes
+metadata dir: 235 files, 3,771,948 bytes (51 metadata.json kept of 93 written)
+bytes per row in Parquet (zstd): 23.4
+one day: CSV 11,568,095 bytes, Parquet 1,811,725 bytes (6.4x smaller)
+
+DuckDB vs generator: 92 of 92 snapshots identical (row count and billed total to the micro-dollar)
+total billed: $12,449,269.36 (synthetic)
+
+queries (best of 3):
+  DuckDB iceberg_scan, whole table: 163 ms
+  DuckDB iceberg_scan, one day: 17 ms
+  DuckDB iceberg_scan, by team, whole table: 187 ms
+  PyIceberg plan, whole table: 181 ms (92 files)
+  PyIceberg plan, one day: 7 ms (1 file)
+  PyIceberg scan to Arrow, one day: 34 ms

@@ -1,0 +1,19 @@
+[project]
+name = "lakehouse"
+version = "0.1.0"
+description = "A small lakehouse on Apache Iceberg (PyIceberg) and DuckDB, over synthetic cloud cost and incident data"
+requires-python = ">=3.12"
+dependencies = [
+  "pyiceberg[sql-postgres,pyarrow,duckdb,pyiceberg-core]==0.12.0",
+  "duckdb==2.0.0",
+  "pyarrow==26.0.1",
+]
+
+[project.optional-dependencies]
+test = ["pytest==9.2.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+filterwarnings = ["ignore::UserWarning", "ignore::DeprecationWarning"]
