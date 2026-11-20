@@ -22,10 +22,9 @@ import pyarrow.compute as pc
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lake import gen, ingest, maintenance, tables  # noqa: E402
-from lake.config import catalog, duck  # noqa: E402
+from lake.config import WORK, catalog, duck  # noqa: E402
 from tests.conftest import TEST_URI, drop_catalog  # noqa: E402
 
-WORK = "D:/cache/lakehouse-work"
 SORT = [("team", "ascending"), ("usage_start", "ascending")]
 
 

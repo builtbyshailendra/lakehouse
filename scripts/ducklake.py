@@ -21,11 +21,10 @@ import pyarrow.compute as pc
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lake import gen, ingest, maintenance, tables  # noqa: E402
-from lake.config import DUCKDB_EXTENSIONS, catalog, duck  # noqa: E402
+from lake.config import DUCKDB_EXTENSIONS, WORK, catalog, duck  # noqa: E402
 from tests.conftest import TEST_URI, drop_catalog  # noqa: E402
 
-WORK = "D:/cache/lakehouse-work"
-PSQL = ["D:/DB/bin/psql.exe", "-h", "127.0.0.1", "-p", "5433", "-U", "postgres", "-d", "postgres", "-tAc"]
+PSQL = [os.environ.get("LAKE_PSQL") or shutil.which("psql") or "D:/DB/bin/psql.exe", "-h", "127.0.0.1", "-p", "5433", "-U", "postgres", "-d", "postgres", "-tAc"]
 DL_DB = "ducklake_test"
 
 
@@ -46,10 +45,7 @@ def ducklake(data_path, inlining):
     psql(f"CREATE DATABASE {DL_DB}")
     shutil.rmtree(data_path, ignore_errors=True)
     os.makedirs(data_path)
-    c = duck()
-    c.execute("LOAD ducklake")
-    c.execute("INSTALL postgres")
-    c.execute("LOAD postgres")
+    c = duck(("iceberg", "avro", "ducklake", "postgres"))
     c.execute(f"ATTACH 'ducklake:postgres:dbname={DL_DB} host=127.0.0.1 port=5433 user=postgres' AS dl "
               f"(DATA_PATH '{data_path}/', DATA_INLINING_ROW_LIMIT {inlining})")
     c.execute("""CREATE TABLE dl.cost (
@@ -181,7 +177,7 @@ def main():
     shutil.rmtree(wh, ignore_errors=True)
     shutil.rmtree(f"{WORK}/ducklake", ignore_errors=True)
     psql(f"DROP DATABASE IF EXISTS {DL_DB} WITH (FORCE)")
-    print(f"\n(DuckDB extensions from {DUCKDB_EXTENSIONS}; both catalogs on the same PostgreSQL 16)")
+    print(f"\n(DuckDB extensions from {DUCKDB_EXTENSIONS or '~/.duckdb'}; both catalogs on the same PostgreSQL 16)")
 
 
 if __name__ == "__main__":

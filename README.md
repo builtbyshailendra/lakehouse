@@ -1,8 +1,10 @@
 # lakehouse
 
+[![ci](https://github.com/builtbyshailendra/lakehouse/actions/workflows/ci.yml/badge.svg)](https://github.com/builtbyshailendra/lakehouse/actions/workflows/ci.yml)
+
 A small lakehouse on **Apache Iceberg**: PyIceberg 0.12 writes the tables, the catalog lives in a local PostgreSQL, and **DuckDB 2.0** reads them. The data is three months of synthetic cloud billing exports (7.1 million line items in the spirit of the FinOps FOCUS format) plus an incident log. Built step by step to see how a table format behaves under crashes, racing writers, schema changes, small files, bad data and analytics, measuring each step.
 
-Built pairing with Claude Code. Everything runs locally; all data is synthetic (made-up teams, resources, costs and incidents). Not published.
+Built pairing with Claude Code. Everything runs on one machine; all data is synthetic (made-up teams, resources, costs and incidents). Published 20 Nov 2026; CI runs the tests and the step 1 measurement on every push.
 
 ```text
 billing export (Arrow) ──► write-audit-publish ──► branch audit-<batch> ──► checks ──► fast-forward main
@@ -15,13 +17,12 @@ maintenance: compaction (file-level replace) · snapshot expiry · orphan cleanu
 ## Run it
 
 ```bash
-python -m venv D:/cache/venv-lakehouse
-D:/cache/venv-lakehouse/Scripts/python -m pip install "pyiceberg[sql-postgres,pyarrow,duckdb,pyiceberg-core]==0.12.0" duckdb==2.0.0 pyarrow==26.0.1 pytest==9.2.0
-D:/cache/venv-lakehouse/Scripts/python -m pytest              # 47 tests, about 3 minutes
-D:/cache/venv-lakehouse/Scripts/python scripts/run_all.py     # every measurement below, about 15 minutes
-D:/cache/venv-lakehouse/Scripts/python -m lake show           # the cost table's metadata tree
+pip install "pyiceberg[sql-postgres,pyarrow,duckdb,pyiceberg-core]==0.12.0" duckdb==2.0.0 pyarrow==26.0.1 pytest==9.2.0
+python -m pytest              # 47 tests, about 3 minutes
+python scripts/run_all.py     # every measurement below, about 15 minutes
+python -m lake show           # the cost table's metadata tree
 ```
-Needs PostgreSQL with databases `lakehouse` and `lakehouse_test` (here the test cluster on port 5433, trust auth on localhost) and DuckDB's `iceberg`, `avro`, `ducklake` and `postgres` extensions (installed once into `LAKE_DUCKDB_EXT`). Settings: `LAKE_PG_URI`, `LAKE_TEST_PG_URI`, `LAKE_WAREHOUSE` in `lake/config.py`. On Windows, PyIceberg rejects `file:///D:/...` locations; plain `D:/...` works for both engines.
+Needs PostgreSQL with databases `lakehouse` and `lakehouse_test`, by default on 127.0.0.1:5433 with trust auth (CI uses a `postgres:16` service the same way). DuckDB installs its `iceberg`, `avro`, `ducklake` and `postgres` extensions on first use. Settings in `lake/config.py`: `LAKE_PG_URI`, `LAKE_TEST_PG_URI`, `LAKE_WORK`, `LAKE_WAREHOUSE`, `LAKE_DUCKDB_EXT`. On Windows, PyIceberg rejects `file:///D:/...` locations; plain `D:/...` works for both engines.
 
 ## The data
 
